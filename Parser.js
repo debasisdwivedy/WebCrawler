@@ -1,4 +1,4 @@
-
+var events= require('events');
 var method=Parser.prototype;
 var htmlparser = require("htmlparser2");
 var http= require('http');
@@ -10,6 +10,7 @@ function Parser(baseUrl) {
     _self._baseUrl=baseUrl;
     _self._protocol=http;
     _self.s = new Set();
+    _self.eventEmitter = new events.EventEmitter();
 }
 
 method.getProtocol = function(url)
@@ -40,7 +41,8 @@ method.parsedData = new htmlparser.Parser({
 
     },
     onend: function () {
-        console.log(_self.s.details());
+        _self.eventEmitter.emit('ready');
+        console.log("end...");
     },
 },{decodeEntities : true});
 
@@ -67,6 +69,10 @@ method.getResponse= function(url)
         }).bind(this))
 
     }).bind(this))
+}
+
+method.getLinks = function () {
+    return _self.s;
 }
 
 module.exports = Parser;
