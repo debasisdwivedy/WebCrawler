@@ -5,8 +5,6 @@ var http= require('http');
 var https = require('https');
 var Set = require('./Set.js');
 
-var data='<!DOCTYPE html><html><head></head><body>Hi there!</body></html>';
-
 function Parser(baseUrl) {
     _self=this;
     _self._baseUrl=baseUrl;
