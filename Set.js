@@ -43,11 +43,7 @@ method.contains=function (obj) {
 }
 
 method.get=function (index) {
-    if(this.arr.length<=index)
-    {
-        return this.arr[index];
-    }
-    return null;
+    return this.arr[index];
 }
 
 method.deleteObj=function (obj)

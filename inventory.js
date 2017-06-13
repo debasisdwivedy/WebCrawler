@@ -37,7 +37,7 @@ function file_to_set(crawler,fileName)
     })
 }
 
-function createDirectory(directoryName,url) {
+function createDirectory(crawler,directoryName,url) {
     var str = "./" + directoryName;
     fs.mkdir(str, function (error) {
         if (error) {
@@ -45,15 +45,15 @@ function createDirectory(directoryName,url) {
         }
         else {
             console.log("Created Directory.." + directoryName);
-            createFile(str, "queued.txt",url);
+            createFile(crawler,str, "queued.txt",url);
             console.log("Created File..queued.txt");
-            createFile(str, "crawled.txt","");
+            createFile(crawler,str, "crawled.txt","");
             console.log("Created File..crawled.txt");
         }
     });
 }
 
-function createFile(directory,fileName,data) {
+function createFile(crawler,directory,fileName,data) {
     var path=directory+"/"+fileName;
     if(!fs.exists(path))
     {
@@ -64,6 +64,18 @@ function createFile(directory,fileName,data) {
         if(error)
         {
             console.log("Unable to write "+fileName+"in "+directory+" due to error.."+error.message)
+        }
+        else
+        {
+            if(fileName =='queued.txt')
+            {
+                crawler.eventEmitter.emit('queueFileCreated');
+            }
+            else
+            {
+                crawler.eventEmitter.emit('crawledFileCreated');
+            }
+
         }
     });
 }

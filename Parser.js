@@ -74,6 +74,10 @@ method.getResponse= function(url)
             this.getParsedData(data);
         }).bind(this))
 
+        response.on('error', (function () {
+            console.log("Unable to connect to  .."+ url);
+        }).bind(this))
+
     }).bind(this))
 }
 
