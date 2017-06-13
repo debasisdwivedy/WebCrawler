@@ -1,3 +1,9 @@
+/*
+Takes the url of a website and finds out the links(<a href="">) present in these websites.
+It collects these links and passes it to the crawler module for further processing.
+
+ */
+
 var events= require('events');
 var method=Parser.prototype;
 var htmlparser = require("htmlparser2");
@@ -41,7 +47,7 @@ method.parsedData = new htmlparser.Parser({
 
     },
     onend: function () {
-        _self.eventEmitter.emit('ready');
+        _self.eventEmitter.emit('ready',_self.s);
         console.log("end...");
     },
 },{decodeEntities : true});
@@ -71,8 +77,5 @@ method.getResponse= function(url)
     }).bind(this))
 }
 
-method.getLinks = function () {
-    return _self.s;
-}
 
 module.exports = Parser;

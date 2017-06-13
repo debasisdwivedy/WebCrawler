@@ -1,3 +1,7 @@
+/*
+Generic file operations maintained in one file for convenience.
+ */
+
 var fs=require('fs');
 var Set= require('./Set.js')
 var readline=require('readline');
@@ -11,7 +15,7 @@ function set_to_file(links,file)
     })
 }
 
-function file_to_set(fileName)
+function file_to_set(crawler,fileName)
 {
     var s=new Set();
     var rl = readline.createInterface({
@@ -29,10 +33,11 @@ function file_to_set(fileName)
     rl.on('close',function()
     {
         console.log("set is.."+s.details());
+        crawler.eventEmitter.emit('ready',s);
     })
 }
 
-function createDirectory(directoryName) {
+function createDirectory(directoryName,url) {
     var str = "./" + directoryName;
     fs.mkdir(str, function (error) {
         if (error) {
@@ -40,7 +45,7 @@ function createDirectory(directoryName) {
         }
         else {
             console.log("Created Directory.." + directoryName);
-            createFile(str, "queued.txt","www.google.com");
+            createFile(str, "queued.txt",url);
             console.log("Created File..queued.txt");
             createFile(str, "crawled.txt","");
             console.log("Created File..crawled.txt");
