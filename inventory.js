@@ -6,13 +6,19 @@ var fs=require('fs');
 var Set= require('./Set.js')
 var readline=require('readline');
 
-function set_to_file(links,file)
+function set_to_file(crawler,links,file)
 {
+    console.log('in function set_to_file..'+file);
     deleteFile(file);
-    links.details().forEach(function(element)
+    var appendStream = fs.createWriteStream(file,{'flags': 'a'});
+
+    for(var i=0;i<links.details().length;i++)
     {
-        appendFile(file,element);
-    })
+        appendStream.write(links.details()[i]+"\n");
+    }
+
+    appendStream.end();
+
 }
 
 function file_to_set(crawler,fileName)
@@ -24,6 +30,7 @@ function file_to_set(crawler,fileName)
         terminal: false
     })
 
+
     rl.on('line', function(line)
     {
         s.addObj(line);
@@ -32,9 +39,15 @@ function file_to_set(crawler,fileName)
 
     rl.on('close',function()
     {
-        console.log("set is.."+s.details());
-        crawler.eventEmitter.emit('ready',s);
+        console.log("fileToSet is.."+s.details());
+        crawler.eventEmitter.emit('ready',null,s);
     })
+
+    rl.on('error',function(err)
+    {
+        crawler.eventEmitter.emit('ready',err,s);
+    })
+
 }
 
 function createDirectory(crawler,directoryName,url) {
@@ -80,37 +93,16 @@ function createFile(crawler,directory,fileName,data) {
     });
 }
 
-function appendFile(filePath,data) {
-    fs.appendFile(filePath,"\n"+data,function(error)
-    {
-        if(error)
-        {
-            console.log("Unable to write to file "+filePath+" due to error.."+error.message)
-        }
-        else
-        {
-            console.log(data+" appended successfully!!!")
-        }
-    });
-}
 
 function deleteFile(filePath)
 {
-    fs.writeFile(filePath,"",function(error)
-    {
-        if(error)
-        {
-            console.log("Unable to delete file...");
-        }
-        else
-        {
-            console.log("Successfully deleted file...");
-        }
-    });
+    var createStream = fs.createWriteStream(filePath,{'flags': 'w'});
+    createStream.write('');
+    createStream.end();
+    console.log("file deleted...")
 }
 
 module.exports.createProject=createDirectory
-module.exports.append=appendFile
 module.exports.deleteContent=deleteFile
 module.exports.fileToSet=file_to_set
 module.exports.setToFile=set_to_file
