@@ -12,3 +12,6 @@ CRAWLED_FILE = PROJECT_NAME +"/crawled.txt";
 NUMBER_OF_THREADS = 8;
 
 crawler = new CRAWLER(PROJECT_NAME,HOMEPAGE,DOMAIN_NAME,CRAWLED_FILE,QUEUE_FILE);
+crawler.eventEmitter.on('initializationCompleted',function () {
+    console.log('end..');
+})
