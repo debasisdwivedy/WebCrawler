@@ -6,7 +6,7 @@ var method=Crawler.prototype;
 var events= require('events');
 var set=require("./Set");
 var Parser= require('./Parser.js');
-var inventory=require('./inventory')
+var inventory=require('./inventory');
 
 /*
 Class level variables
@@ -26,22 +26,22 @@ Constructor
 
 function Crawler(project_dir,base_url,domain_name,crawled_file_location,queued_file_location)
 {
-    _self=this;
     _project_dir=project_dir;
     _base_url=base_url;
     _domain_name=domain_name;
     _crawled_file_location=crawled_file_location;
     _queued_file_location=queued_file_location;
-    _self.eventEmitter = new events.EventEmitter();
-    _self.init();
-    _self.crawl(_crawlerCount+1,_base_url);
+    this.eventEmitter = new events.EventEmitter();
+    this.init();
+    this.crawl(_crawlerCount+1,_base_url);
 }
 
 method.init = function()
 {
+    var _self=this;
     inventory.createProject(_self,_project_dir,_base_url);
 
-    _self.eventEmitter.on('queueFileCreated', function () {
+    this.eventEmitter.on('queueFileCreated', function () {
         inventory.fileToSet(_self,_queued_file_location);
     })
 
@@ -49,17 +49,31 @@ method.init = function()
         inventory.fileToSet(_self,_crawled_file_location);
     })
 
-    _self.eventEmitter.on('ready',function (set) {
+    _self.eventEmitter.on('fileToSet',function (error,set) {
+        if(error!=null)
+        {
+            console.log("error occurred while converting File to Set in queue.."+error.message);
+            return;
+        }
         _queue=set;
     });
-    _self.eventEmitter.on('ready',function (set) {
+    _self.eventEmitter.on('fileToSet',function (error,set) {
+        if(error!=null)
+        {
+            console.log("error occurred while converting File to Set in crawled.."+error.message);
+            return;
+        }
         _crawled=set;
     });
 }
 
 method.updateFile = function () {
-    inventory.setToFile(_queue,_queued_file_location);
-    inventory.setToFile(_crawled,_crawled_file_location);
+    console.log('in update file...')
+    var _self=this;
+    console.log('queue set is...'+_queue.details())
+    inventory.setToFile(_self,_queue,_queued_file_location);
+    console.log('crawled set is...'+_crawled.details())
+    inventory.setToFile(_self,_crawled,_crawled_file_location);
 }
 
 method.crawl = function(count,url)
@@ -69,14 +83,13 @@ method.crawl = function(count,url)
         console.log("Crawler number "+count+" crawling on "+url);
         var parser = new Parser(url);
         parser.getResponse(url);
-        parser.eventEmitter.on('ready', (function (set) {
+        parser.eventEmitter.on('parsed', (function (set) {
             console.log("checking queued.. "+ _queue.details());
             console.log("checking crawled.. "+ _crawled.details());
             console.log("set is.. "+ set.details());
             for(var i=0;i<set.size();i++)
             {
                 var value=set.get(i);
-                console.log("value is.. "+value);
                 if(!_queue.contains(value) && !_crawled.contains(value) && (value==null || value.indexOf(_domain_name) >= 0))
                 {
                     _queue.addObj(value);
@@ -91,7 +104,7 @@ method.crawl = function(count,url)
 
             this.updateFile();
             console.log("Successfully updated file ... ");
-
+            this.eventEmitter.emit('initializationCompleted');
         }).bind(this));
     }
 }
