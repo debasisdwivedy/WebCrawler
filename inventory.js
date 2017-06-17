@@ -8,7 +8,7 @@ var readline=require('readline');
 
 function set_to_file(crawler,links,file)
 {
-    console.log('in function set_to_file..'+file);
+    //console.log('in function set_to_file..'+file);
     deleteFile(file);
     var appendStream = fs.createWriteStream(file,{'flags': 'a'});
 
@@ -21,7 +21,7 @@ function set_to_file(crawler,links,file)
 
 }
 
-function file_to_set(crawler,fileName)
+function file_to_set(crawler,tag,fileName)
 {
     var s=new Set();
     var rl = readline.createInterface({
@@ -39,13 +39,12 @@ function file_to_set(crawler,fileName)
 
     rl.on('close',function()
     {
-        console.log("fileToSet is.."+s.details());
-        crawler.eventEmitter.emit('ready',null,s);
+        crawler.eventEmitter.emit('fileToSet'+tag,null,s);
     })
 
     rl.on('error',function(err)
     {
-        crawler.eventEmitter.emit('ready',err,s);
+        crawler.eventEmitter.emit('fileToSet'+tag,err,s);
     })
 
 }
@@ -54,14 +53,14 @@ function createDirectory(crawler,directoryName,url) {
     var str = "./" + directoryName;
     fs.mkdir(str, function (error) {
         if (error) {
-            console.log("Directory Exists..");
+            //console.log("Directory Exists..");
         }
         else {
-            console.log("Created Directory.." + directoryName);
+            //console.log("Created Directory.." + directoryName);
             createFile(crawler,str, "queued.txt",url);
-            console.log("Created File..queued.txt");
+            //console.log("Created File..queued.txt");
             createFile(crawler,str, "crawled.txt","");
-            console.log("Created File..crawled.txt");
+            //console.log("Created File..crawled.txt");
         }
     });
 }
@@ -76,7 +75,7 @@ function createFile(crawler,directory,fileName,data) {
     {
         if(error)
         {
-            console.log("Unable to write "+fileName+"in "+directory+" due to error.."+error.message)
+            //console.log("Unable to write "+fileName+"in "+directory+" due to error.."+error.message)
         }
         else
         {
@@ -99,7 +98,7 @@ function deleteFile(filePath)
     var createStream = fs.createWriteStream(filePath,{'flags': 'w'});
     createStream.write('');
     createStream.end();
-    console.log("file deleted...")
+    //console.log("file deleted...")
 }
 
 module.exports.createProject=createDirectory
