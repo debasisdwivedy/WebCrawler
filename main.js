@@ -7,9 +7,9 @@ fs = require('fs');
 var inventory=require('./inventory');
 var Queue = require('queuejs');
 
-PROJECT_NAME= 'sebastianseilund'; // Name of the root folder
 HOMEPAGE =  'http://www.sebastianseilund.com'; // Name of the website you want to crawl
 DOMAIN_NAME = URL.parse(HOMEPAGE).host;
+PROJECT_NAME= 'Local_File/'+DOMAIN_NAME; // Name of the root folder
 QUEUE_FILE = PROJECT_NAME +"/queued.txt";
 CRAWLED_FILE = PROJECT_NAME +"/crawled.txt";
 NUMBER_OF_THREADS = 8;
