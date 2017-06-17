@@ -6,10 +6,18 @@ var fs=require('fs');
 var Set= require('./Set.js')
 var readline=require('readline');
 
-function set_to_file(crawler,links,file)
+function set_to_file(crawler,links,file,appendStatus)
 {
+    if(appendStatus==null)
+    {
+        appendStatus=true;
+    }
     //console.log('in function set_to_file..'+file);
-    deleteFile(file);
+    if(!appendStatus)
+    {
+        deleteFile(file);
+    }
+
     var appendStream = fs.createWriteStream(file,{'flags': 'a'});
 
     for(var i=0;i<links.details().length;i++)

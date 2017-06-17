@@ -24,6 +24,14 @@ method.getProtocol = function(url)
     {
         this._protocol=https;
     }
+    else if(url.indexOf("http")>=0)
+    {
+        this._protocol=http;
+    }
+    else
+    {
+        this._protocol='';
+    }
 
 }
 
@@ -62,6 +70,10 @@ method.getResponse= function(url)
     var _self=this;
     var data='';
     _self.getProtocol(url);
+    if(_self._protocol=='')
+    {
+        return;
+    }
     _self._protocol.get(url,function (response) {
 
         response.on('data', function (chunk) {

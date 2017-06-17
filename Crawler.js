@@ -7,7 +7,6 @@ var events= require('events');
 var set=require("./Set");
 var Parser= require('./Parser.js');
 var inventory=require('./inventory');
-var URL = require('url');
 
 /*
 Class level variables
@@ -35,8 +34,8 @@ function Crawler(project_dir,base_url,domain_name,crawled_file_location,queued_f
     _queued_file_location=queued_file_location;
     this.eventEmitter = new events.EventEmitter();
     this.init();
-    this.uploadSet(true);
-    this.crawl(this.increase_counter(),_base_url);
+    this.uploadSet();
+    this.crawl(this.increase_counter(),_base_url,true);
 }
 
  method.increase_counter = function() {
@@ -59,7 +58,7 @@ method.init = function()
 }
 
 
-method.uploadSet = function (status) {
+method.uploadSet = function () {
 
     //console.log("in upload set..")
     var _self=this;
@@ -92,15 +91,12 @@ method.uploadSet = function (status) {
     });
 
     _self.eventEmitter.on('fileToSet_queued' && 'fileToSet_crawled' , function () {
-        if(status)
-        {
-            _self.eventEmitter.emit('setUploaded');
-        }
+        _self.eventEmitter.emit('setUploaded');
 
     })
 }
 
-method.crawl = function(count,url)
+method.crawl = function(count,url,notify)
 {
     var _self=this;
 
@@ -117,7 +113,8 @@ method.crawl = function(count,url)
                 //console.log("set is.. "+ set.details());
                 for(var i=0;i<set.size();i++)
                 {
-                    var value=URL.format(set.get(i));
+
+                    var value=set.get(i).replace(/([^:]\/)\/+/g, "$1");
                     if(!_queue.contains(value) && !_crawled.contains(value) && (value==null || value.indexOf(_domain_name) >= 0))
                     {
                         _queue.addObj(value);
@@ -130,7 +127,10 @@ method.crawl = function(count,url)
                 _crawled.addObj(url);
                 //console.log("added link to crawled "+ url);
 
-                _self.eventEmitter.emit('crawlingCompleted');
+                if(notify)
+                {
+                    _self.eventEmitter.emit('crawlingCompleted');
+                }
 
             });
         }
@@ -142,9 +142,9 @@ method.updateFile = function () {
     //console.log('in update file...')
     var _self=this;
     //console.log('queue set is...'+_queue.details())
-    inventory.setToFile(_self,_queue,_queued_file_location);
+    inventory.setToFile(_self,_queue,_queued_file_location,false);
     //console.log('crawled set is...'+_crawled.details())
-    inventory.setToFile(_self,_crawled,_crawled_file_location);
+    inventory.setToFile(_self,_crawled,_crawled_file_location,true);
 
 }
 
