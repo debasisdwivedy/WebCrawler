@@ -62,6 +62,32 @@ function createDirectory(crawler,directoryName,url) {
     fs.mkdir(str, function (error) {
         if (error) {
             //console.log("Directory Exists..");
+
+            var queueFile=str+"/"+"queued.txt";
+            var crawledFile=str+"/"+"crawled.txt";
+
+            crawler.eventEmitter.emit('directoryExist');
+
+            if (fs.existsSync(queueFile)) {
+                console.log("Queue file Exists..");
+                crawler.eventEmitter.emit('queueFileCreated');
+            }
+            else
+            {
+                createFile(crawler,str, "queued.txt",url);
+                console.log("Queue File does not Exists..");
+
+            }
+            if (fs.existsSync(crawledFile)) {
+                console.log("Crawled file Exists..");
+                crawler.eventEmitter.emit('crawledFileCreated');
+            }
+            else
+            {
+                console.log("Crawled File does not Exists..");
+                createFile(crawler,str, "crawled.txt",url);
+            }
+
         }
         else {
             //console.log("Created Directory.." + directoryName);

@@ -7,7 +7,7 @@ fs = require('fs');
 var inventory=require('./inventory');
 
 PARENT_DIR='Local_File'; // The root directory where the files will be stored
-HOMEPAGE =  ''; // Name of the website you want to crawl(http://www.javabrains.io)
+HOMEPAGE =  'http://www.javabrains.io'; // Name of the website you want to crawl(http://www.javabrains.io)
 DOMAIN_NAME = URL.parse(HOMEPAGE).host;
 PROJECT_NAME= PARENT_DIR+'/'+DOMAIN_NAME; // Name of the root folder
 QUEUE_FILE = PROJECT_NAME +"/queued.txt";
@@ -57,3 +57,18 @@ function worker(set,callback)
         }
     })
 }
+
+//do something when app is closing
+process.on('exit', function () {
+    complete();
+});
+
+//catches ctrl+c event
+process.on('SIGINT', function () {
+    complete();
+});
+
+//catches uncaught exceptions
+process.on('uncaughtException', function () {
+    complete();
+});

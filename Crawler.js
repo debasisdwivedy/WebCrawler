@@ -28,7 +28,7 @@ Constructor
 function Crawler(project_dir,base_url,domain_name,crawled_file_location,queued_file_location)
 {
     _project_dir=project_dir;
-    _base_url=URL.format(base_url);
+    _base_url=base_url;
     _domain_name=domain_name;
     _crawled_file_location=crawled_file_location;
     _queued_file_location=queued_file_location;
@@ -67,6 +67,10 @@ method.uploadSet = function () {
     //console.log("in upload set..")
     var _self=this;
 
+    _self.eventEmitter.on('directoryExist', function () {
+        console.log('directory exist...');
+    })
+
     _self.eventEmitter.on('queueFileCreated', function () {
         inventory.fileToSet(_self,"_queued",_queued_file_location);
     })
@@ -81,7 +85,7 @@ method.uploadSet = function () {
             console.log("error occurred while converting File to Set in queue.."+error.message);
             return;
         }
-        //console.log('Queue set created...');
+
         _queue=set;
     });
     _self.eventEmitter.on('fileToSet_crawled',function (error,set) {
@@ -134,12 +138,17 @@ var crawling = function (_self,count,url,notify) {
 
         });
     }
+    else
+    {
+        _self.eventEmitter.emit(count+'_crawlingCompleted');
+    }
 }
 
 
 method.crawl = function(count,url,notify,setUploadStatusRequired)
 {
     var _self=this;
+    console.log("set upload status..."+setUploadStatusRequired)
     if(setUploadStatusRequired)
     {
         _self.eventEmitter.on('setUploaded',function()
