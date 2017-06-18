@@ -5,53 +5,56 @@ URL = require('url');
 CRAWLER = require('./Crawler')
 fs = require('fs');
 var inventory=require('./inventory');
-var Queue = require('queuejs');
 
-HOMEPAGE =  'http://www.sebastianseilund.com'; // Name of the website you want to crawl
+PARENT_DIR='Local_File'; // The root directory where the files will be stored
+HOMEPAGE =  ''; // Name of the website you want to crawl(http://www.javabrains.io)
 DOMAIN_NAME = URL.parse(HOMEPAGE).host;
-PROJECT_NAME= 'Local_File/'+DOMAIN_NAME; // Name of the root folder
+PROJECT_NAME= PARENT_DIR+'/'+DOMAIN_NAME; // Name of the root folder
 QUEUE_FILE = PROJECT_NAME +"/queued.txt";
 CRAWLED_FILE = PROJECT_NAME +"/crawled.txt";
 NUMBER_OF_THREADS = 8;
 
 crawler = new CRAWLER(PROJECT_NAME,HOMEPAGE,DOMAIN_NAME,CRAWLED_FILE,QUEUE_FILE);
-crawler.eventEmitter.on('crawlingCompleted',function () {
-    console.log('end..');
-    crawler.updateFile();
-    console.log("Successfully updated file ... ");
 
-    crawler.eventEmitter.emit('queueFileCreated');
-    crawler.eventEmitter.emit('crawledFileCreated');
+crawler.eventEmitter.on('1_crawlingCompleted',function () {
+    console.log(crawler.getCrawlerCount());
+    var s=crawler.getQueue();
 
-    crawler.uploadSet();
-
-    crawler.eventEmitter.on('setUploaded',function () {
-
-        var s=crawler.getQueue();
-        var queue = new Queue();
-        if(s.size()>0)
-        {
-            addToQueue(s,queue);
-            while(queue.size()>0)
-            {
-                worker(queue.deq());
-            }
-        }
-    })
+    if(s.size()>0)
+    {
+        worker(s,complete);
+    }
+    else
+    {
+        console.log("No files in queue list...");
+        complete();
+        return;
+    }
 })
 
-
-function worker(link)
-{
-    //console.log("in worker.."+link);
-    crawler.crawl(crawler.increase_counter(),link,true);
+var complete = function () {
+    console.log(".....");
+    crawler.updateFile();
+    console.log("Successfully updated file ... ");
 }
 
-function addToQueue(set,q)
+function worker(set,callback)
 {
-    for(var i=0;i<set.size();i++)
-    {
-        q.enq(set.get(i));
-    }
+    console.log("in worker module.."+set.get(0));
+    var count=crawler.increase_counter();
+    crawler.crawl(count,set.get(0),true,false);
+    crawler.eventEmitter.on(count+'_crawlingCompleted',function () {
+        console.log(crawler.getCrawlerCount());
+        var s=crawler.getQueue();
+        if(s.size()>0)
+        {
+            worker(s,callback);
+        }
+        else
+        {
+            console.log("No files in queue list...");
+            callback();
+            return;
+        }
+    })
 }
-

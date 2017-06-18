@@ -35,11 +35,11 @@ function Crawler(project_dir,base_url,domain_name,crawled_file_location,queued_f
     this.eventEmitter = new events.EventEmitter();
     this.init();
     this.uploadSet();
-    this.crawl(this.increase_counter(),_base_url,true);
+    this.crawl(this.increase_counter(),_base_url,true,true);
 }
 
  method.increase_counter = function() {
-    _crawlerCount++;
+    _crawlerCount += 1;
     return _crawlerCount;
 }
 
@@ -49,6 +49,10 @@ method.getQueue = function() {
 
 method.getCrawled = function() {
     return _crawled;
+}
+
+method.getCrawlerCount = function() {
+    return _crawlerCount;
 }
 
 method.init = function()
@@ -96,45 +100,58 @@ method.uploadSet = function () {
     })
 }
 
-method.crawl = function(count,url,notify)
+var crawling = function (_self,count,url,notify) {
+
+    if(!_crawled.contains(url) && !_inTransit.contains(url)) {
+        _inTransit.addObj(url);
+        console.log("Crawler number "+count+" crawling on "+url);
+        var parser = new Parser(url);
+        parser.getResponse(url);
+        parser.eventEmitter.on('parsed', function (set) {
+            //console.log("checking queued.. "+ _queue.details());
+            //console.log("checking crawled.. "+ _crawled.details());
+            //console.log("set is.. "+ set.details());
+            for(var i=0;i<set.size();i++)
+            {
+
+                var value=set.get(i).replace(/([^:]\/)\/+/g, "$1");
+                if(!_queue.contains(value) && !_crawled.contains(value) && (value==null || value.indexOf(_domain_name) >= 0))
+                {
+                    _queue.addObj(value);
+                }
+            }
+
+            //console.log("added links to queue "+ _queue.details());
+            _queue.deleteObj(url);
+            //console.log("deleted link from the queue "+ url);
+            _crawled.addObj(url);
+            //console.log("added link to crawled "+ url);
+
+            if(notify)
+            {
+                _self.eventEmitter.emit(count+'_crawlingCompleted');
+            }
+
+        });
+    }
+}
+
+
+method.crawl = function(count,url,notify,setUploadStatusRequired)
 {
     var _self=this;
+    if(setUploadStatusRequired)
+    {
+        _self.eventEmitter.on('setUploaded',function()
+        {
+            crawling(_self,count,url,notify);
+        });
+    }
+    else
+    {
+        crawling(_self,count,url,notify);
+    }
 
-    _self.eventEmitter.on('setUploaded',function () {
-
-        if(!_crawled.contains(url) && !_inTransit.contains(url)) {
-            _inTransit.addObj(url);
-            console.log("Crawler number "+count+" crawling on "+url);
-            var parser = new Parser(url);
-            parser.getResponse(url);
-            parser.eventEmitter.on('parsed', function (set) {
-                //console.log("checking queued.. "+ _queue.details());
-                //console.log("checking crawled.. "+ _crawled.details());
-                //console.log("set is.. "+ set.details());
-                for(var i=0;i<set.size();i++)
-                {
-
-                    var value=set.get(i).replace(/([^:]\/)\/+/g, "$1");
-                    if(!_queue.contains(value) && !_crawled.contains(value) && (value==null || value.indexOf(_domain_name) >= 0))
-                    {
-                        _queue.addObj(value);
-                    }
-                }
-
-                //console.log("added links to queue "+ _queue.details());
-                _queue.deleteObj(url);
-                //console.log("deleted link from the queue "+ url);
-                _crawled.addObj(url);
-                //console.log("added link to crawled "+ url);
-
-                if(notify)
-                {
-                    _self.eventEmitter.emit('crawlingCompleted');
-                }
-
-            });
-        }
-    })
 }
 
 method.updateFile = function () {

@@ -3,7 +3,6 @@
 A Node JS Web Crawler module.
 
 Dependencies :-  
-1.htmlparser2 (https://github.com/fb55/htmlparser2)  
-2.janogonzalez/queuejs  (https://github.com/janogonzalez/queuejs)  
+1.htmlparser2 (https://github.com/fb55/htmlparser2)    
 
-Single threaded for the time being!!!
+Single threaded asynchronous callback mechanism 
